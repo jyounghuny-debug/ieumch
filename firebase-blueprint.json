@@ -1,0 +1,107 @@
+{
+  "entities": {
+    "AuthorizedManager": {
+      "title": "AuthorizedManager",
+      "description": "Church administrator or authorized staff member with editing permissions",
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "description": "Email address of the manager"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name or title of the manager"
+        },
+        "role": {
+          "type": "string",
+          "enum": ["owner", "admin", "editor"],
+          "description": "Access level role"
+        },
+        "assignedBy": {
+          "type": "string",
+          "description": "UID or email of the person who granted permissions"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when permission was granted"
+        }
+      },
+      "required": ["email", "name", "role", "createdAt"]
+    },
+    "ChurchContent": {
+      "title": "ChurchContent",
+      "description": "Global church homepage settings, posts, and announcements",
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Type of content: settings, posts, stories, sermons"
+        },
+        "data": {
+          "type": "string",
+          "description": "Serialized JSON data payload"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Last update timestamp"
+        },
+        "updatedBy": {
+          "type": "string",
+          "description": "Email of the editor who updated"
+        }
+      },
+      "required": ["type", "data", "updatedAt"]
+    },
+    "PrayerRequest": {
+      "title": "PrayerRequest",
+      "description": "Intercessory prayer shared by church members (anonymous or named) with real-time prayer count",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Title of the prayer request"
+        },
+        "content": {
+          "type": "string",
+          "description": "Body of the prayer request"
+        },
+        "author": {
+          "type": "string",
+          "description": "Author name or anonymous label"
+        },
+        "isAnonymous": {
+          "type": "boolean",
+          "description": "Whether the prayer request is posted anonymously"
+        },
+        "category": {
+          "type": "string",
+          "description": "Prayer category: healing, family, career, mission, church, nation, general, answered"
+        },
+        "prayerCount": {
+          "type": "number",
+          "description": "Count of times people have prayed for this request"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Creation timestamp"
+        }
+      },
+      "required": ["title", "content", "author", "isAnonymous", "category", "prayerCount", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/managers/{managerId}": {
+      "schema": "AuthorizedManager",
+      "description": "List of authorized church managers and administrators"
+    },
+    "/church_data/{contentId}": {
+      "schema": "ChurchContent",
+      "description": "Synchronized church website content and records"
+    },
+    "/prayers/{prayerId}": {
+      "schema": "PrayerRequest",
+      "description": "Collection of intercessory prayers with live count updates"
+    }
+  }
+}

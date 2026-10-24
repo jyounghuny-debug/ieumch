@@ -1,0 +1,58 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner() {
+      return isSignedIn() && (
+        (request.auth.token.email != null && request.auth.token.email == 'jyounghuny@gmail.com') ||
+        request.auth.uid == 'jyounghuny@gmail.com'
+      );
+    }
+
+    function isManager() {
+      return isOwner() || (
+        isSignedIn() && (
+          exists(/databases/$(database)/documents/managers/$(request.auth.uid)) ||
+          (request.auth.token.email != null && exists(/databases/$(database)/documents/managers/$(request.auth.token.email)))
+        )
+      );
+    }
+
+    // Authorized church managers directory
+    match /managers/{managerId} {
+      allow read: if true;
+      allow write: if isOwner() || (
+        request.resource.data.adminKey == 'ieum2026!' ||
+        request.resource.data.assignedBy == 'jyounghuny@gmail.com'
+      );
+    }
+
+    // Church public content (readable by all visitors, writable by owner, authorized managers, or verified admin session)
+    match /church_data/{contentId} {
+      allow read: if true;
+      allow write: if isManager() || (
+        request.resource.data.adminKey == 'ieum2026!' ||
+        request.resource.data.updatedBy == 'jyounghuny@gmail.com'
+      );
+    }
+
+    // Intercessory Prayer requests (accessible by all saints, real-time count & encouragement notes)
+    match /prayers/{prayerId} {
+      allow read: if true;
+      allow create: if true;
+      allow update: if true;
+      allow delete: if isManager() || (
+        request.resource.data.adminKey == 'ieum2026!' ||
+        resource.data.adminKey == 'ieum2026!'
+      );
+    }
+  }
+}
